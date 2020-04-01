@@ -1,117 +1,101 @@
-The content below is an example project proposal / requirements document. Replace the text below the lines marked "__TODO__" with details specific to your project. Remove the "TODO" lines.
-
-(___TODO__: your project name_)
-
-# Shoppy Shoperson 
+# CookIt
 
 ## Overview
 
-(___TODO__: a brief one or two paragraph, high-level description of your project_)
+Sometimes, it's hard to figure out what you can cook up with the ingredients found in your fridge. Other times, you want to know
+where and what ingredients you are missing for that delicious dinner. 
 
-Remembering what to buy at the grocery store is waaaaay too difficult. Also, shopping for groceries when you're hungry leads to regrettable purchases. Sooo... that's where Shoppy Shoperson comes in!
-
-Shoppy Shoperson is a web app that will allow users to keep track of multiple grocery lists. Users can register and login. Once they're logged in, they can create or view their grocery list. For every list that they have, they can add items to the list or cross off items.
+CookIt is a web app that allows users to keep track of their ingredients and matches them to a database of recipes. Users can register and login, and once logged in they can update their inventory and add to it using a grocery list. 
 
 
 ## Data Model
 
-(___TODO__: a description of your application's data and their relationships to each other_) 
+The application will store Users, Lists, Ingredients, and Recipes
 
-The application will store Users, Lists and Items
+* each recipe will have ingredients tied to it (reference)
+* each ingredient will also have recipes tied to it (reference)
+* each user can have multiple ingredients lists/ recipes (embedded)
 
-* users can have multiple lists (via references)
-* each list can have multiple items (by embedding)
 
-(___TODO__: sample documents_)
-
-An Example User:
+An Example User with Embedded Ingredients and Recipes:
 
 ```javascript
 {
-  username: "shannonshopper",
+  username: "testcook",
   hash: // a password hash,
-  lists: // an array of references to List documents
+  list: // list of ingredients
+  recipe: // list of personal recipes 
 }
 ```
 
-An Example List with Embedded Items:
+An Example Recipe:
 
 ```javascript
 {
   user: // a reference to a User object
-  name: "Breakfast foods",
-  items: [
-    { name: "pancakes", quantity: "9876", checked: false},
-    { name: "ramen", quantity: "2", checked: true},
+  name: "English Breakfast",
+  ingredients: [
+    { name: "egg", quantity: "two", owns: true},
+    { name: "butter", quantity: "one tablespoon", owns: false},
+    { name: "bacon", quantitty: "three slices", owns: true}
   ],
-  createdAt: // timestamp
+  steps: "1. Heat the Pan and add a dash of oil once hot. .... etc"
+}
+
+```
+
+An Example Ingredient List:
+
+```javascript
+{
+  user: // a reference to a User object
+  name: "My Fridge",
+  items: [
+    { name: "soda", quantity: "one liter", owns: true, recipes: /*reference to list of recipes w/ this item */ },
+    { name: "egg", quantity: "one dozen", owns: true, recipes: /*reference to recipes w/ this item */},
+    { name: "bacon", quantitty: "twelve slices", owns: true, recipes: /*reference to recipes w/ this item */ }
+  ],
 }
 ```
 
-
 ## [Link to Commented First Draft Schema](db.js) 
-
-(___TODO__: create a first draft of your Schemas in db.js and link to it_)
 
 ## Wireframes
 
-(___TODO__: wireframes for all of the pages on your site; they can be as simple as photos of drawings or you can use a tool like Balsamiq, Omnigraffle, etc._)
-
-/list/create - page for creating a new shopping list
-
-![list create](documentation/list-create.png)
-
-/list - page for showing all shopping lists
-
-![list](documentation/list.png)
-
-/list/slug - page for showing specific shopping list
-
-![list](documentation/list-slug.png)
+![wireframe](wireframes.png)
 
 ## Site map
 
-(___TODO__: draw out a site map that shows how pages are related to each other_)
-
-Here's a [complex example from wikipedia](https://upload.wikimedia.org/wikipedia/commons/2/20/Sitemap_google.jpg), but you can create one without the screenshots, drop shadows, etc. ... just names of pages and where they flow to.
+![sitemap](sitemap.png)
 
 ## User Stories or Use Cases
 
-(___TODO__: write out how your application will be used through [user stories](http://en.wikipedia.org/wiki/User_story#Format) and / or [use cases](https://www.mongodb.com/download-center?jmp=docs&_ga=1.47552679.1838903181.1489282706#previous)_)
-
-1. as non-registered user, I can register a new account with the site
-2. as a user, I can log in to the site
-3. as a user, I can create a new grocery list
-4. as a user, I can view all of the grocery lists I've created in a single list
-5. as a user, I can add items to an existing grocery list
-6. as a user, I can cross off items in an existing grocery list
+1. as a non-registered user, I can register an account on the site
+2. as a user, I can log in/log out to the site
+3. as a user, I can a new inventory list of ingredients
+4. as a user, I can view all possible recipes with said ingredients from most to least
+5. as a user, I can add ingredients to my inventory
+6. as a user, I can remove ingredients
+7. as a user, I can add new recipes to the site
+8. as an admin, I can add/remove existing recipes
 
 ## Research Topics
 
-(___TODO__: the research topics that you're planning on working on along with their point values... and the total points of research topics listed_)
-
-* (5 points) Integrate user authentication
-    * I'm going to be using passport for user authentication
-    * And account has been made for testing; I'll email you the password
-    * see <code>cs.nyu.edu/~jversoza/ait-final/register</code> for register page
-    * see <code>cs.nyu.edu/~jversoza/ait-final/login</code> for login page
-* (4 points) Perform client side form validation using a JavaScript library
-    * see <code>cs.nyu.edu/~jversoza/ait-final/my-form</code>
-    * if you put in a number that's greater than 5, an error message will appear in the dom
-* (5 points) vue.js
-    * used vue.js as the frontend framework; it's a challenging library to learn, so I've assigned it 5 points
-
+* (4 points) Integrate user authentication
+    * I've never done user authentication with javascript before.
+    * If it's anything like django's framework, I have assigned it 4 points with some basis of familiarity
+* (2 points) BootStrap CSS
+    * as bootstrap and other css modules are relatively easy to operate from what I've heard, I've assigned it 2 points
+* (4 points) 
+    * Selenium is challenging to automate testing, so I've assgined it 4 points
 10 points total out of 8 required points (___TODO__: addtional points will __not__ count for extra credit_)
 
 
 ## [Link to Initial Main Project File](app.js) 
 
-(___TODO__: create a skeleton Express application with a package.json, app.js, views folder, etc. ... and link to your initial app.js_)
 
 ## Annotations / References Used
 
-(___TODO__: list any tutorials/references/etc. that you've based your code off of_)
-
-1. [passport.js authentication docs](http://passportjs.org/docs) - (add link to source code that was based on this)
-2. [tutorial on vue.js](https://vuejs.org/v2/guide/) - (add link to source code that was based on this)
+1. [passport.js authentication docs](http://passportjs.org/docs) 
+2. [Selenium docs](https://www.selenium.dev/documentation/en/)
 

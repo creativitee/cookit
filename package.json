@@ -1,0 +1,22 @@
+{
+  "name": "creativitee-final-project",
+  "version": "1.0.0",
+  "description": "Sometimes, it's hard to figure out what you can cook up with the ingredients found in your fridge. Other times, you want to know\r where and what ingredients you are missing for that delicious dinner.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nyu-csci-ua-0480-008-spring-2020/creativitee-final-project.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nyu-csci-ua-0480-008-spring-2020/creativitee-final-project/issues"
+  },
+  "homepage": "https://github.com/nyu-csci-ua-0480-008-spring-2020/creativitee-final-project#readme",
+  "devDependencies": {
+    "express": "^4.17.1"
+  }
+}
