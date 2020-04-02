@@ -62,11 +62,11 @@ An Example Ingredient List:
 
 ## Wireframes
 
-![wireframe](wireframes.png)
+![wireframe](wireframes.PNG)
 
 ## Site map
 
-![sitemap](sitemap.png)
+![sitemap](sitemap.PNG)
 
 ## User Stories or Use Cases
 
