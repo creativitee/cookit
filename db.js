@@ -30,7 +30,7 @@ const List = new mongoose.Schema({
   user: {type: mongoose.Schema.Types.ObjectId, ref:'User'},
   name: {type: String, required: true},
   createdAt: {type: Date, required: true},
-  items: [Item]
+  items: [Ingredient]
 });
 
 const Recipe = new mongoose.Schema({
