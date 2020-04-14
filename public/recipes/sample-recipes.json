@@ -1,0 +1,12 @@
+{
+    "recipes" : [
+    {
+        "user" : 2, 
+        "name" : 4, 
+        "createdAt": 5,
+        "ingredients": 6, 
+        "steps": 7
+    },
+    {}
+    
+]}
