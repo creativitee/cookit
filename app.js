@@ -5,10 +5,18 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const passport = require('passport');
 const bcrypt = require('bcrypt');
+const mongoose = require('mongoose');
 const LocalStrategy = require('passport-local').Strategy;
 
 const app = express();
 const list = [];
+
+
+
+//mongoose
+const Ingredient = mongoose.model('Ingredient');
+const List = mongoose.model('List');
+const Recipe = mongoose.model('Recipe');
 
 //temporary user store
 const users = [];
@@ -56,6 +64,9 @@ app.post('/', (req,res) => {
 
 
 
+
+
+
 //Login, Register
 app.get('/login', (req, res) => {
   res.render('login');
@@ -74,33 +85,33 @@ app.post('/register', (req,res) => {
 })
 
 
-passport.serializeUser((user, done) => {
-  done(null, user.username);
-});
+// passport.serializeUser((user, done) => {
+//   done(null, user.username);
+// });
 
-passport.deserializeUser((username, done) => {
-  done(null, {username: username});
-}); 
+// passport.deserializeUser((username, done) => {
+//   done(null, {username: username});
+// }); 
 
 
-passport.use(new LocalStrategy(
-  (username, password, done) => {
-      if(username === 'test@gmail.com' && password === '1234') {
-          return done(null, {username: 'test@gmail.com'});
-      } else {
-          return done(null, false);
-      }
-   }
-));
+// passport.use(new LocalStrategy(
+//   (username, password, done) => {
+//       if(username === 'test@gmail.com' && password === '1234') {
+//           return done(null, {username: 'test@gmail.com'});
+//       } else {
+//           return done(null, false);
+//       }
+//    }
+// ));
 
-function isLoggedIn(req, res, next){
-  if(req.isAuthenticated()){
-    return next;
-  }
-  else{
-    return res.redirect('/login');
-  }
-}
+// function isLoggedIn(req, res, next){
+//   if(req.isAuthenticated()){
+//     return next;
+//   }
+//   else{
+//     return res.redirect('/login');
+//   }
+// }
 
 
 // app.configure(function() {

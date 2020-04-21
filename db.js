@@ -49,4 +49,4 @@ mongoose.model('Ingredient', Ingredient);
 mongoose.model('List', List);
 mongoose.model('Recipe', Recipe);
 
-mongoose.connect('mongodb://localhost/db', {useNewUrlParser: true, useUnifiedTopology: true});
+mongoose.connect('mongodb://localhost/final', {useNewUrlParser: true, useUnifiedTopology: true});
