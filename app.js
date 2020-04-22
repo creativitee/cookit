@@ -2,6 +2,7 @@ require('./db');
 
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const bodyParser = require('body-parser');
 const passport = require('passport');
 const bcrypt = require('bcrypt');
@@ -17,6 +18,7 @@ const list = [];
 const Ingredient = mongoose.model('Ingredient');
 const List = mongoose.model('List');
 const Recipe = mongoose.model('Recipe');
+const User = mongoose.model('User');
 
 //temporary user store
 const users = [];
@@ -24,9 +26,9 @@ const users = [];
 // enable sessions
 const session = require('express-session');
 const sessionOptions = {
-    secret: 'superdupersecret',
-    resave: true,
-      saveUninitialized: true
+  secret: 'superdupersecret',
+  resave: true,
+  saveUninitialized: true
 };
 app.use(session(sessionOptions));
 
@@ -46,6 +48,28 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 
+//add sample recipes
+app.use(function (req, res, next) {
+  fs.readFile('./public/recipes/sample-recipes.json', function (err, data){
+    if (err) {
+      console.log(err);
+    }
+    // else {
+    //   const d = JSON.parse(data);
+    //   const recipe = new Recipe(d);
+    //   recipe.save((err, newList) => {
+    //     if (err) {
+    //       console.log(err);
+    //     }
+    //     else {
+    //       console.log(recipe);
+    //     }
+    //   });
+    // }
+  });
+  next();
+});
+
 
 ////////////////////////
 /////Route Handling/////
@@ -64,23 +88,23 @@ app.get('/', (req, res) => {
 // });
 
 //createList page
-app.get('/createList', (req,res) => {
+app.get('/createList', (req, res) => {
   res.render('createlist');
-})
+});
 
 
 //list page
-app.post('/', function(req, res){
+app.post('/', function (req, res) {
   const ingredients = [];
   // const temp = req.body.list.split(',');
   const itemNames = req.body.itemName;
   const quantities = req.body.quantity;
-  for (let i = 0; i < itemNames.length; i++){
+  for (let i = 0; i < itemNames.length; i++) {
     // const curr = temp[i].split(' ');
     // console.log(curr);
-    const obj = { 
-      name: itemNames[i],
+    const obj = {
       quantity: quantities[i],
+      name: itemNames[i],
       checked: true
     }
     console.log(obj);
@@ -91,19 +115,36 @@ app.post('/', function(req, res){
     name: req.body.listName,
     items: ingredients
   }
-  
+
   const newList = new List(listObj);
   newList.save((err, newList) => {
     console.log(newList);
-    if (err){
+    if (err) {
       console.log(err);
     }
-    else{
+    else {
       res.redirect('/');
     }
 
   });
+});
 
+app.get('/myLists', function (req, res) {
+  //query object
+  const query = {};
+
+  //check if query exists
+  if (Object.prototype.hasOwnProperty.call(req.query, 'queryName')) {
+    //if any of the queries have only one value
+    if (req.query.queryName !== "") {
+      query['name'] = req.query.queryName;
+    }
+  }
+
+  //find the item with the query
+  List.find(query, (err, result) => {
+    res.render('list', { list: result });
+  });
 
 });
 
@@ -127,8 +168,28 @@ app.get('/register', (req, res) => {
   res.render('register');
 })
 
-app.post('/register', (req,res) => {
+app.post('/register', (req, res) => {
 })
+
+
+
+//handle passport
+passport.use(new LocalStrategy(
+  function(username, password, done) {
+    User.findOne({ username: username }, function (err, user) {
+      if (err) { return done(err); }
+      if (!user) { return done(null, false); }
+      if (!user.verifyPassword(password)) { return done(null, false); }
+      return done(null, user);
+    });
+  }
+));
+
+
+//configure
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 
 
 // passport.serializeUser((user, done) => {
@@ -202,4 +263,5 @@ app.post('/register', (req,res) => {
 //     res.redirect('/users/' + req.user.username);
 //   });
 
-app.listen(3000);
+// app.listen(3000);
+app.listen(process.env.PORT || 22438);

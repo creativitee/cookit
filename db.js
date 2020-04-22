@@ -1,10 +1,13 @@
 // 1ST DRAFT DATA MODEL
 const mongoose = require('mongoose');
+const passportLocalMongoose = require('passport-local-mongoose');
 
 // users
 //get username and pw hash
 const User = new mongoose.Schema({
   // username provided by authentication plugin 
+  username: String,
+  password: String,
   // password hash provided by authentication plugin (add salt to this)
   lists:  [{ type: mongoose.Schema.Types.ObjectId, ref: 'List' }],
   recipes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Recipe' }]
@@ -15,10 +18,10 @@ const User = new mongoose.Schema({
 //   require additional Item documents; just increase the quantity!)
 // * items in a list can be crossed off
 const Ingredient = new mongoose.Schema({
-  name: {type: String, required: true},
   // quantity: {type: Number, min: 1, required: true},
   quantity: {type: String, required: true},
-  checked: {type: Boolean, default: false, required: true},
+  name: {type: String, required: true},
+  checked: {type: Boolean, default: true},
   // recipe: [{type: mongoose.Schema.Types.ObjectId, ref: 'Recipe'}]
 }, 
 // {
@@ -46,10 +49,32 @@ const Recipe = new mongoose.Schema({
 
 // TODO: add remainder of setup for slugs, connection, registering models, etc. below
 
+User.plugin(passportLocalMongoose);
 mongoose.model('User', User);
-mongoose.model('Ingredient', Ingredient);
 
+mongoose.model('Ingredient', Ingredient);
 mongoose.model('List', List);
 mongoose.model('Recipe', Recipe);
 
-mongoose.connect('mongodb://localhost/final', {useNewUrlParser: true, useUnifiedTopology: true});
+
+// is the environment variable, NODE_ENV, set to PRODUCTION? 
+let dbconf;
+if (process.env.NODE_ENV === 'PRODUCTION') {
+ // if we're in PRODUCTION mode, then read the configration from a file
+ // use blocking file io to do this...
+ const fs = require('fs');
+ const path = require('path');
+ const fn = path.join(__dirname, 'config.json');
+ const data = fs.readFileSync(fn);
+
+ // our configuration file will be in json, so parse it and set the
+ // conenction string appropriately!
+ const conf = JSON.parse(data);
+ dbconf = conf.dbconf;
+} else {
+ // if we're not in PRODUCTION mode, then use
+ dbconf = 'mongodb://localhost/final';
+}
+
+// mongoose.connect('mongodb://localhost/final', {useNewUrlParser: true, useUnifiedTopology: true});
+mongoose.connect(dbconf, {useNewUrlParser: true, useUnifiedTopology: true});  

@@ -98,4 +98,5 @@ An Example Ingredient List:
 
 1. [passport.js authentication docs](http://passportjs.org/docs) 
 2. [Selenium docs](https://www.selenium.dev/documentation/en/)
-
+3. [Sample Recipes](https://github.com/raywenderlich/recipes/blob/master/Recipes.json)
+4. [Sample passport js code](https://mherman.org/blog/local-authentication-with-passport-and-express-4/)
