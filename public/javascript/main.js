@@ -7,9 +7,9 @@ function main(){
 
     function handleAdd(evt){
         evt.preventDefault();
-        const li = addElement(form, 'li', 'Ingredient ');
-        addInputElement(li, 'text', 'quantity');
-        addInputElement(li, 'text', 'itemName');
+        const li = addElement(form, 'li', '');
+        addInputElement(li, 'text', 'quantity', 'Quantity');
+        addInputElement(li, 'text', 'itemName', 'Ingredient');
     }
 }
 
@@ -22,10 +22,13 @@ function addElement(location, type, text) {
     return element;
 }
 
-function addInputElement(location, inputType, name) {
+function addInputElement(location, inputType, name, itemName) {
     const element = document.createElement('input');
+    const label = document.createElement('label');
+    label.textContent = itemName;
     element.name = name;
     element.type = inputType;
+    location.appendChild(label);
     location.appendChild(element);
     return element;
 }

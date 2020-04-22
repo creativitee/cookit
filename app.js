@@ -159,31 +159,48 @@ app.get('/login', (req, res) => {
   res.render('login');
 });
 
-app.post('/login', passport.authenticate('local', {
+app.post('/login', passport.authenticate('local'), {
   failureRedirect: '/login',
   successRedirect: '/'
-}));;
+});;
 
 app.get('/register', (req, res) => {
   res.render('register');
 })
 
 app.post('/register', (req, res) => {
+  User.register(new User({
+    username : req.body.username
+}),
+   req.body.password, function(err, user){
+      if(err){            
+           console.log(err);            
+           return res.render('register');        
+}
+passport.authenticate("local")(req, res, function(){
+  res.redirect("/");       
+});     
+});
 })
+
+app.get("/logout", function(req, res){    
+  req.logout();    
+  res.redirect("/login");
+});
 
 
 
 //handle passport
-passport.use(new LocalStrategy(
-  function(username, password, done) {
-    User.findOne({ username: username }, function (err, user) {
-      if (err) { return done(err); }
-      if (!user) { return done(null, false); }
-      if (!user.verifyPassword(password)) { return done(null, false); }
-      return done(null, user);
-    });
-  }
-));
+// passport.use(new LocalStrategy(
+//   function(username, password, done) {
+//     User.findOne({ username: username }, function (err, user) {
+//       if (err) { return done(err); }
+//       if (!user) { return done(null, false); }
+//       if (!user.verifyPassword(password)) { return done(null, false); }
+//       return done(null, user);
+//     });
+//   }
+// ));
 
 
 //configure
@@ -213,7 +230,7 @@ passport.deserializeUser(User.deserializeUser());
 
 // function isLoggedIn(req, res, next){
 //   if(req.isAuthenticated()){
-//     return next;
+//     return next;   
 //   }
 //   else{
 //     return res.redirect('/login');
