@@ -51,14 +51,60 @@ app.use(express.static(path.join(__dirname, 'public')));
 /////Route Handling/////
 ////////////////////////
 
+
+//home page
 app.get('/', (req, res) => {
-  res.render('home', {list : list});
+  res.render('home');
 });
 
-app.post('/', (req,res) => {
-  const obj = {ingredient : req.body.name, quantity : req.body.quantity};
-  list.push(obj);
-  res.redirect('/');
+// app.post('/', (req,res) => {
+//   const obj = {ingredient : req.body.name, quantity : req.body.quantity};
+//   list.push(obj);
+//   res.redirect('/');
+// });
+
+//createList page
+app.get('/createList', (req,res) => {
+  res.render('createlist');
+})
+
+
+//list page
+app.post('/', function(req, res){
+  const ingredients = [];
+  // const temp = req.body.list.split(',');
+  const itemNames = req.body.itemName;
+  const quantities = req.body.quantity;
+  for (let i = 0; i < itemNames.length; i++){
+    // const curr = temp[i].split(' ');
+    // console.log(curr);
+    const obj = { 
+      name: itemNames[i],
+      quantity: quantities[i],
+      checked: true
+    }
+    console.log(obj);
+    const newIngredient = new Ingredient(obj);
+    ingredients.push(newIngredient);
+  }
+  const listObj = {
+    name: req.body.listName,
+    items: ingredients
+  }
+  
+  const newList = new List(listObj);
+  newList.save((err, newList) => {
+    console.log(newList);
+    if (err){
+      console.log(err);
+    }
+    else{
+      res.redirect('/');
+    }
+
+  });
+
+
 });
 
 

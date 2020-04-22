@@ -16,27 +16,30 @@ const User = new mongoose.Schema({
 // * items in a list can be crossed off
 const Ingredient = new mongoose.Schema({
   name: {type: String, required: true},
-  quantity: {type: Number, min: 1, required: true},
+  // quantity: {type: Number, min: 1, required: true},
+  quantity: {type: String, required: true},
   checked: {type: Boolean, default: false, required: true},
-  recipe: [{type: mongoose.Schema.Types.ObjectId, ref: 'Recipe'}]
-}, {
-  _id: true
-});
+  // recipe: [{type: mongoose.Schema.Types.ObjectId, ref: 'Recipe'}]
+}, 
+// {
+//   _id: true
+// }
+);
 
 // a inventory list
 // * each list must have a related user
 // * a list can have 0 or more items
 const List = new mongoose.Schema({
-  user: {type: mongoose.Schema.Types.ObjectId, ref:'User'},
+  // user: {type: mongoose.Schema.Types.ObjectId, ref:'User'},
   name: {type: String, required: true},
-  createdAt: {type: Date, required: true},
+  // createdAt: {type: Date, required: true},
   items: [Ingredient]
 });
 
 const Recipe = new mongoose.Schema({
-  user: {type: mongoose.Schema.Types.ObjectId, ref:'User'},
+  // user: {type: mongoose.Schema.Types.ObjectId, ref:'User'},
   name: {type: String, required: true},
-  createdAt: {type: Date, required: true},
+  // createdAt: {type: Date, required: true},
   ingredients: [Ingredient],
   steps: [String]
 });
