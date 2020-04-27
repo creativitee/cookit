@@ -1,0 +1,16 @@
+<a href="/home">Back</a>
+
+{{!-- form --}}
+<form method="GET" action="/myLists">
+    List Name: <input type="text" name="queryName">
+    <input type="submit" value="Filter">
+</form>
+
+{{!-- 
+{{list}} --}}
+
+<ul>
+{{#each list as |l|}}
+    <li><a href=/myLists/{{l.name}}>{{l.name}}</a></li>
+{{/each}}
+</ul>

@@ -1,33 +1,19 @@
-<a href="/">Back</a>
-
-{{!-- form --}}
-<form method="GET" action="/myLists">
-    List Name: <input type="text" name="queryName">
-    <input type="submit" value="Filter">
-</form>
+<a href="/myLists">Back</a>
 
 
-{{list}}
-{{!-- table --}}
-{{!-- <div class="table">
+<h1>{{list.name}}</h1>
+
+<div class="table">
     <table>
         <tr>
-            <th>Course Number</th>
-            <th>Course Name</th>
-            <th>Semester</th>
-            <th>Year</th>
-            <th>Professor</th>
-            <th>Review</th>
+            <th>Ingredient</th>
+            <th>Quantity</th>
         </tr>
-        {{#each reviews as |review|}}
+        {{#each list.items as |ingredient|}}
         <tr>
-            <td>{{review.courseNumber}}</td>
-            <td>{{review.courseName}}</td>
-            <td>{{review.semester}}</td>
-            <td>{{review.year}}</td>
-            <td>{{review.professor}}</td>
-            <td>{{review.review}}</td>
+            <td>{{ingredient.name}}</td>
+            <td>{{ingredient.quantity}}</td>
         </tr>
         {{/each}}
     </table>
-</div> --}}
+</div>

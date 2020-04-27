@@ -6,11 +6,12 @@ const passportLocalMongoose = require('passport-local-mongoose');
 //get username and pw hash
 const User = new mongoose.Schema({
   // username provided by authentication plugin 
+  _id : mongoose.Schema.Types.ObjectID,
   username: String,
   password: String,
   // password hash provided by authentication plugin (add salt to this)
-  lists:  [{ type: mongoose.Schema.Types.ObjectId, ref: 'List' }],
-  recipes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Recipe' }]
+  // lists:  [{ type: mongoose.Schema.Types.ObjectId, ref: 'List' }]
+  // recipes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Recipe' }]
 });
 
 // an ingredient in a recipe 
@@ -33,7 +34,7 @@ const Ingredient = new mongoose.Schema({
 // * each list must have a related user
 // * a list can have 0 or more items
 const List = new mongoose.Schema({
-  // user: {type: mongoose.Schema.Types.ObjectId, ref:'User'},
+  user: {type: mongoose.Schema.Types.ObjectId, ref:'User'},
   name: {type: String, required: true},
   // createdAt: {type: Date, required: true},
   items: [Ingredient]

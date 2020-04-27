@@ -37,6 +37,11 @@ app.use(session(sessionOptions));
 app.use(passport.initialize());
 app.use(passport.session());
 
+//configure
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
@@ -54,18 +59,21 @@ app.use(function (req, res, next) {
     if (err) {
       console.log(err);
     }
-    // else {
-    //   const d = JSON.parse(data);
-    //   const recipe = new Recipe(d);
-    //   recipe.save((err, newList) => {
-    //     if (err) {
-    //       console.log(err);
-    //     }
-    //     else {
-    //       console.log(recipe);
-    //     }
-    //   });
-    // }
+    // else{
+    else {
+      const d = JSON.parse(data);
+      for (const recipe of d){
+        const newRecipe = new Recipe(recipe);
+        newRecipe.save((err, newRecipe) => {
+          if (err) {
+            console.log(err);
+          }
+          else {
+            console.log(newRecipe);
+          }
+        });
+      }
+    }
   });
   next();
 });
@@ -77,9 +85,16 @@ app.use(function (req, res, next) {
 
 
 //home page
+
 app.get('/', (req, res) => {
+  res.render('startPage');
+})
+
+
+app.get("/home", isLoggedIn, function(req, res){
   res.render('home');
-});
+})
+
 
 // app.post('/', (req,res) => {
 //   const obj = {ingredient : req.body.name, quantity : req.body.quantity};
@@ -87,18 +102,24 @@ app.get('/', (req, res) => {
 //   res.redirect('/');
 // });
 
+
 //createList page
-app.get('/createList', (req, res) => {
+
+
+app.get('/createList', isLoggedIn
+,(req, res) => {
   res.render('createlist');
 });
 
 
 //list page
-app.post('/', function (req, res) {
+app.post('/home', isLoggedIn, function (req, res) {
   const ingredients = [];
   // const temp = req.body.list.split(',');
   const itemNames = req.body.itemName;
   const quantities = req.body.quantity;
+  
+  console.log(itemNames, quantities);
   for (let i = 0; i < itemNames.length; i++) {
     // const curr = temp[i].split(' ');
     // console.log(curr);
@@ -112,26 +133,45 @@ app.post('/', function (req, res) {
     ingredients.push(newIngredient);
   }
   const listObj = {
+    user : req.user._id,
     name: req.body.listName,
     items: ingredients
   }
 
   const newList = new List(listObj);
+  // req.user.lists.push(newList);
+  
+  // req.user.save(function(err){
+  //   if (err){
+  //     console.log(err);
+  //   }
+  //   else{
+  //     newList.save((err, newList) => {
+  //       console.log(newList);
+  //       if(err){
+  //         console.log(err);
+  //       }
+  //       else{
+  //         res.redirect('/home');
+  //       }
+  //     })
+  //   }
+  // });
   newList.save((err, newList) => {
     console.log(newList);
     if (err) {
       console.log(err);
     }
     else {
-      res.redirect('/');
+      res.redirect('/home');
     }
 
   });
 });
 
-app.get('/myLists', function (req, res) {
+app.get('/myLists', isLoggedIn, function (req, res) {
   //query object
-  const query = {};
+  const query = {user: req.user._id};
 
   //check if query exists
   if (Object.prototype.hasOwnProperty.call(req.query, 'queryName')) {
@@ -140,48 +180,72 @@ app.get('/myLists', function (req, res) {
       query['name'] = req.query.queryName;
     }
   }
-
   //find the item with the query
   List.find(query, (err, result) => {
-    res.render('list', { list: result });
+    res.render('myLists', { list: result });
   });
 
 });
 
 
+app.get('/myLists/:name', function(req, res){
+  const listName = req.params.name;
+  const obj = {user : req.user._id, name : listName};
+  List.find(obj, (err, result) => {
+      res.render('list', { list: result[0]});
+  });
+});
 
 
 
-
-
-//Login, Register
+// Login, Register
 app.get('/login', (req, res) => {
   res.render('login');
 });
 
-app.post('/login', passport.authenticate('local'), {
-  failureRedirect: '/login',
-  successRedirect: '/'
-});;
+// app.post('/login', isLoggedIn, {
+//   failureRedirect: '/login',
+//   successRedirect: '/'
+// });;
+
+app.post("/login", passport.authenticate("local",{
+  successRedirect:"/home",
+  failureRedirect:"/login"
+}),function(req, res){
+  res.send("User is "+ req.user.id);
+});
 
 app.get('/register', (req, res) => {
   res.render('register');
 })
 
-app.post('/register', (req, res) => {
-  User.register(new User({
-    username : req.body.username
-}),
-   req.body.password, function(err, user){
-      if(err){            
-           console.log(err);            
-           return res.render('register');        
-}
-passport.authenticate("local")(req, res, function(){
-  res.redirect("/");       
-});     
-});
-})
+// app.post('/register', (req, res) => {
+//   User.register(new User({
+//     username : req.body.username
+// }),
+//    req.body.password, function(err, user){
+//       if(err){            
+//            console.log(err);            
+//            return res.render('register');        
+// }
+
+app.post("/register", function(req, res){
+  User.register(new User({_id: mongoose.Types.ObjectId(), username:req.body.username}),req.body.password, function(err, user){
+         if(err){
+              console.log(err);
+              return res.render('register');
+          } //user stragety
+          passport.authenticate("local")(req, res, function(){
+              res.redirect("/login"); //once the user sign up
+         }); 
+      });
+  });
+  
+// passport.authenticate("local")(req, res, function(){
+//   res.redirect("/");       
+// });     
+// });
+// })
 
 app.get("/logout", function(req, res){    
   req.logout();    
@@ -189,7 +253,12 @@ app.get("/logout", function(req, res){
 });
 
 
-
+function isLoggedIn(req, res, next){
+  if(req.isAuthenticated()){
+      return next();
+  }
+  res.redirect("/login");
+}
 //handle passport
 // passport.use(new LocalStrategy(
 //   function(username, password, done) {
@@ -203,10 +272,7 @@ app.get("/logout", function(req, res){
 // ));
 
 
-//configure
-passport.use(new LocalStrategy(User.authenticate()));
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
+
 
 
 // passport.serializeUser((user, done) => {
@@ -273,12 +339,12 @@ passport.deserializeUser(User.deserializeUser());
 // );
 
 // app.post('/login',
-//   passport.authenticate('local'),
+//   isLoggedIn,
 //   function(req, res) {
 //     // If this function gets called, authentication was successful.
 //     // `req.user` contains the authenticated user.
 //     res.redirect('/users/' + req.user.username);
 //   });
 
-// app.listen(3000);
-app.listen(process.env.PORT || 22438);
+app.listen(3000);
+// app.listen(process.env.PORT || 22438);
