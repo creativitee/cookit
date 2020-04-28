@@ -92,10 +92,15 @@ app.get('/createList', isLoggedIn
 app.post('/home', isLoggedIn, function (req, res) {
   const ingredients = [];
   // const temp = req.body.list.split(',');
-  const itemNames = req.body.itemName;
-  const quantities = req.body.quantity;
-  
-  console.log(itemNames, quantities);
+  let itemNames = req.body.itemName;
+  let quantities = req.body.quantity;
+
+
+  if (typeof itemNames === 'string' && typeof quantities === 'string'){
+    itemNames = [itemNames];
+    quantites = [quantities];
+  }
+
   for (let i = 0; i < itemNames.length; i++) {
     // const curr = temp[i].split(' ');
     // console.log(curr);
@@ -157,7 +162,7 @@ app.get('/myLists/:name', isLoggedIn, function(req, res){
         console.log(err);
       }
       else{
-        // const recipes = findRecipes(result.ingredients);
+        const recipes = findRecipes(result.ingredients);
         res.render('list', { list: result[0]});
       }
   });
@@ -172,13 +177,16 @@ app.get('/addRecipe', isLoggedIn, function(req, res){
 app.post('/recipes', isLoggedIn, function (req, res) {
   const ingredients = [];
   // const temp = req.body.list.split(',');
-  const itemNames = req.body.itemName;
-  const quantities = req.body.quantity;
-  
+  let itemNames = req.body.itemName;
+  let quantities = req.body.quantity;
+
+  if (typeof itemNames === 'string' && typeof quantities === 'string'){
+    itemNames = [itemNames];
+    quantites = [quantities];
+  }
+
   console.log(itemNames, quantities);
   for (let i = 0; i < itemNames.length; i++) {
-    // const curr = temp[i].split(' ');
-    // console.log(curr);
     if (quantities[i] !== "" && itemNames[i] !== ""){
       const obj = {
         quantity: quantities[i],
@@ -191,6 +199,7 @@ app.post('/recipes', isLoggedIn, function (req, res) {
     }
   }
   const recipeObj = {
+    _id : mongoose.Types.ObjectId(),
     name : req.body.recipeName,
     nameQuery : req.body.recipeName.replace(/\s+/g, ''),
     ingredients : ingredients,
@@ -204,6 +213,7 @@ app.post('/recipes', isLoggedIn, function (req, res) {
       console.log(err);
     }
     else {
+      addIngredients(newRecipe);
       res.redirect('/home');
     }
 
@@ -298,24 +308,25 @@ function loadRecipes() {
       const d = JSON.parse(data);
       for (const recipe of d){
         recipe.nameQuery = recipe.name.replace(/\s+/g, '');
-        recipe._id = new mongoose.Types.ObjectId();
+        recipe._id = mongoose.Types.ObjectId();
         const newRecipe = new Recipe(recipe);
         newRecipe.save((err, newRecipe) => {
           if (err) {
             console.log(err);
           }
           else {
-            for (const ingredient of newRecipe.ingredients){
-              const obj = {
-                quantity : "1",
-                name : ingredient.name,
-              }
-              Ingredient.updateOne(obj, {$push : {recipes : recipe._id}}, {upsert : true}, (err, result) => {
-                if (err){
-                  console.log(err);
-                }
-              });
-            }
+            addIngredients(newRecipe);
+            // for (const ingredient of newRecipe.ingredients){
+            //   const obj = {
+            //     quantity : "1",
+            //     name : ingredient.name,
+            //   }
+            //   Ingredient.updateOne(obj, {$push : {recipes : recipe._id}}, {upsert : true}, (err, result) => {
+            //     if (err){
+            //       console.log(err);
+            //     }
+            //   });
+            // }
           }
         })
       }
@@ -324,17 +335,31 @@ function loadRecipes() {
   app.listen(3000);
 };
 
+function addIngredients(newRecipe){
+  for (const ingredient of newRecipe.ingredients){
+    const obj = {
+      quantity : "1",
+      name : ingredient.name,
+    }
+    Ingredient.updateOne(obj, {$push : {recipes : newRecipe._id}}, {upsert : true}, (err, result) => {
+      if (err){
+        console.log(err);
+      }
+    });
+  }
+}
 
 function findRecipes(ingredient){
-  Recipe.find(ingredient, (err, result) => {
+  Ingredient.find(ingredient, (err, result) => {
     if(err){
       console.log(err);
     }
     else{
-      return result;
+      return result.recipes;
     }
   })
+}
 
-};
+// };
 loadRecipes();
 // app.listen(process.env.PORT || 22438);
