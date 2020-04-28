@@ -1,0 +1,23 @@
+<a href="/recipes">Back</a>
+
+
+<h1>{{recipe.name}}</h1>
+
+<div class="table">
+    <table>
+        <tr>
+            <th>Ingredient</th>
+            <th>Quantity</th>
+        </tr>
+        {{#each recipe.ingredients as |ingredient|}}
+        <tr>
+            <td>{{ingredient.name}}</td>
+            <td>{{ingredient.quantity}}</td>
+        </tr>
+        {{/each}}
+    </table>
+</div>
+
+{{#each recipe.steps as |step|}}
+        <h3>{{step}}</h3>
+{{/each}}

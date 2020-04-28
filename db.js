@@ -23,7 +23,7 @@ const Ingredient = new mongoose.Schema({
   quantity: {type: String, required: true},
   name: {type: String, required: true},
   checked: {type: Boolean, default: true},
-  // recipe: [{type: mongoose.Schema.Types.ObjectId, ref: 'Recipe'}]
+  recipes: [{type: mongoose.Schema.Types.ObjectId, ref: 'Recipe'}]
 }, 
 // {
 //   _id: true
@@ -36,13 +36,16 @@ const Ingredient = new mongoose.Schema({
 const List = new mongoose.Schema({
   user: {type: mongoose.Schema.Types.ObjectId, ref:'User'},
   name: {type: String, required: true},
+  nameQuery : String,
   // createdAt: {type: Date, required: true},
   items: [Ingredient]
 });
 
 const Recipe = new mongoose.Schema({
   // user: {type: mongoose.Schema.Types.ObjectId, ref:'User'},
+  _id : mongoose.Schema.Types.ObjectID,
   name: {type: String, required: true},
+  nameQuery : String,
   // createdAt: {type: Date, required: true},
   ingredients: [Ingredient],
   steps: [String]

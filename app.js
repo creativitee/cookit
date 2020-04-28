@@ -53,30 +53,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 
-//add sample recipes
-app.use(function (req, res, next) {
-  fs.readFile('./public/recipes/sample-recipes.json', function (err, data){
-    if (err) {
-      console.log(err);
-    }
-    // else{
-    else {
-      const d = JSON.parse(data);
-      for (const recipe of d){
-        const newRecipe = new Recipe(recipe);
-        newRecipe.save((err, newRecipe) => {
-          if (err) {
-            console.log(err);
-          }
-          else {
-            console.log(newRecipe);
-          }
-        });
-      }
-    }
-  });
-  next();
-});
 
 
 ////////////////////////
@@ -123,40 +99,25 @@ app.post('/home', isLoggedIn, function (req, res) {
   for (let i = 0; i < itemNames.length; i++) {
     // const curr = temp[i].split(' ');
     // console.log(curr);
-    const obj = {
-      quantity: quantities[i],
-      name: itemNames[i],
-      checked: true
+    if (quantities[i] !== "" && itemNames[i] !== ""){
+      const obj = {
+        quantity: quantities[i],
+        name: itemNames[i],
+        checked: true
+      }
+      console.log(obj);
+      const newIngredient = new Ingredient(obj);
+      ingredients.push(newIngredient);
     }
-    console.log(obj);
-    const newIngredient = new Ingredient(obj);
-    ingredients.push(newIngredient);
   }
   const listObj = {
     user : req.user._id,
     name: req.body.listName,
+    nameQuery : req.body.listName.replace(/\s+/g, ''),
     items: ingredients
   }
 
   const newList = new List(listObj);
-  // req.user.lists.push(newList);
-  
-  // req.user.save(function(err){
-  //   if (err){
-  //     console.log(err);
-  //   }
-  //   else{
-  //     newList.save((err, newList) => {
-  //       console.log(newList);
-  //       if(err){
-  //         console.log(err);
-  //       }
-  //       else{
-  //         res.redirect('/home');
-  //       }
-  //     })
-  //   }
-  // });
   newList.save((err, newList) => {
     console.log(newList);
     if (err) {
@@ -188,14 +149,81 @@ app.get('/myLists', isLoggedIn, function (req, res) {
 });
 
 
-app.get('/myLists/:name', function(req, res){
+app.get('/myLists/:name', isLoggedIn, function(req, res){
   const listName = req.params.name;
-  const obj = {user : req.user._id, name : listName};
+  const obj = {user : req.user._id, nameQuery : listName};
   List.find(obj, (err, result) => {
-      res.render('list', { list: result[0]});
+      if (err){
+        console.log(err);
+      }
+      else{
+        // const recipes = findRecipes(result.ingredients);
+        res.render('list', { list: result[0]});
+      }
   });
 });
 
+
+app.get('/addRecipe', isLoggedIn, function(req, res){
+  res.render('addRecipe');
+})
+
+
+app.post('/recipes', isLoggedIn, function (req, res) {
+  const ingredients = [];
+  // const temp = req.body.list.split(',');
+  const itemNames = req.body.itemName;
+  const quantities = req.body.quantity;
+  
+  console.log(itemNames, quantities);
+  for (let i = 0; i < itemNames.length; i++) {
+    // const curr = temp[i].split(' ');
+    // console.log(curr);
+    if (quantities[i] !== "" && itemNames[i] !== ""){
+      const obj = {
+        quantity: quantities[i],
+        name: itemNames[i],
+        checked: true
+      }
+      console.log(obj);
+      const newIngredient = new Ingredient(obj);
+      ingredients.push(newIngredient);
+    }
+  }
+  const recipeObj = {
+    name : req.body.recipeName,
+    nameQuery : req.body.recipeName.replace(/\s+/g, ''),
+    ingredients : ingredients,
+    steps : req.body.step
+  }
+
+  const newRecipe = new Recipe(recipeObj);
+  newRecipe.save((err, newRecipe) => {
+    console.log(newRecipe);
+    if (err) {
+      console.log(err);
+    }
+    else {
+      res.redirect('/home');
+    }
+
+  });
+});
+
+app.get('/recipes', isLoggedIn, function (req,res){
+  Recipe.find({}, (err, result) => {
+    res.render('allRecipes', {recipes : result});
+  })
+})
+
+
+app.get('/recipes/:recipeName', isLoggedIn, function(req, res){
+  const recipeName = req.params.recipeName;
+  const obj = {nameQuery : recipeName};
+  Recipe.find(obj, (err, result) => {
+      res.render('recipe', {recipe : result[0]});
+  });
+});
 
 
 // Login, Register
@@ -259,92 +287,54 @@ function isLoggedIn(req, res, next){
   }
   res.redirect("/login");
 }
-//handle passport
-// passport.use(new LocalStrategy(
-//   function(username, password, done) {
-//     User.findOne({ username: username }, function (err, user) {
-//       if (err) { return done(err); }
-//       if (!user) { return done(null, false); }
-//       if (!user.verifyPassword(password)) { return done(null, false); }
-//       return done(null, user);
-//     });
-//   }
-// ));
+
+//add sample recipes
+function loadRecipes() {
+  fs.readFile('sample-recipes.json', function (err, data){
+    if (err) {
+      console.log(err);
+    }
+    else {
+      const d = JSON.parse(data);
+      for (const recipe of d){
+        recipe.nameQuery = recipe.name.replace(/\s+/g, '');
+        recipe._id = new mongoose.Types.ObjectId();
+        const newRecipe = new Recipe(recipe);
+        newRecipe.save((err, newRecipe) => {
+          if (err) {
+            console.log(err);
+          }
+          else {
+            for (const ingredient of newRecipe.ingredients){
+              const obj = {
+                quantity : "1",
+                name : ingredient.name,
+              }
+              Ingredient.updateOne(obj, {$push : {recipes : recipe._id}}, {upsert : true}, (err, result) => {
+                if (err){
+                  console.log(err);
+                }
+              });
+            }
+          }
+        })
+      }
+    }
+  })
+  app.listen(3000);
+};
 
 
+function findRecipes(ingredient){
+  Recipe.find(ingredient, (err, result) => {
+    if(err){
+      console.log(err);
+    }
+    else{
+      return result;
+    }
+  })
 
-
-
-// passport.serializeUser((user, done) => {
-//   done(null, user.username);
-// });
-
-// passport.deserializeUser((username, done) => {
-//   done(null, {username: username});
-// }); 
-
-
-// passport.use(new LocalStrategy(
-//   (username, password, done) => {
-//       if(username === 'test@gmail.com' && password === '1234') {
-//           return done(null, {username: 'test@gmail.com'});
-//       } else {
-//           return done(null, false);
-//       }
-//    }
-// ));
-
-// function isLoggedIn(req, res, next){
-//   if(req.isAuthenticated()){
-//     return next;   
-//   }
-//   else{
-//     return res.redirect('/login');
-//   }
-// }
-
-
-// app.configure(function() {
-//   app.use(express.static('public'));
-//   app.use(express.cookieParser());
-//   app.use(express.bodyParser());
-//   app.use(express.session({ secret: 'keyboard cat' }));
-//   app.use(passport.initialize());
-//   app.use(passport.session());
-//   app.use(app.router);
-// });
-
-// const passport = require('passport')
-//   , LocalStrategy = require('passport-local').Strategy;
-
-// passport.use(new LocalStrategy(
-//   function(username, password, done) {
-//     User.findOne({ username: username }, function(err, user) {
-//       if (err) { return done(err); }
-//       if (!user) {
-//         return done(null, false, { message: 'Incorrect username.' });
-//       }
-//       if (!user.validPassword(password)) {
-//         return done(null, false, { message: 'Incorrect password.' });
-//       }
-//       return done(null, user);
-//     });
-//   }
-// ));
-
-// app.post('/login',
-//   passport.authenticate('local', { successRedirect: '/',
-//                                    failureRedirect: '/login',
-//                                    failureFlash: true })
-// );
-
-// app.post('/login',
-//   isLoggedIn,
-//   function(req, res) {
-//     // If this function gets called, authentication was successful.
-//     // `req.user` contains the authenticated user.
-//     res.redirect('/users/' + req.user.username);
-//   });
-
-app.listen(3000);
+};
+loadRecipes();
 // app.listen(process.env.PORT || 22438);
