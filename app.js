@@ -2,13 +2,15 @@ require('./db');
 
 const express = require('express');
 const path = require('path');
-const fs = require('fs');
 const bodyParser = require('body-parser');
 const passport = require('passport');
 const mongoose = require('mongoose');
 const LocalStrategy = require('passport-local').Strategy;
 
 const app = express();
+const help = require('./helper.js')
+
+const helper = new help.Helper();
 
 
 //mongoose
@@ -16,9 +18,6 @@ const Ingredient = mongoose.model('Ingredient');
 const List = mongoose.model('List');
 const Recipe = mongoose.model('Recipe');
 const User = mongoose.model('User');
-
-//temporary user store
-const users = [];
 
 // enable sessions
 const session = require('express-session');
@@ -70,8 +69,6 @@ app.get("/home", isLoggedIn, function (req, res) {
 
 
 //createList page
-
-
 app.get('/createList', isLoggedIn
   , (req, res) => {
     res.render('createlist');
@@ -308,46 +305,9 @@ function isLoggedIn(req, res, next) {
   res.redirect("/login");
 }
 
-//add sample recipes
-function loadRecipes() {
-  fs.readFile('sample-recipes.json', function (err, data) {
-    if (err) {
-      console.log(err);
-    }
-    else {
-      const d = JSON.parse(data);
-      for (const recipe of d) {
-        recipe.nameQuery = recipe.name.replace(/\s+/g, '');
-        recipe._id = mongoose.Types.ObjectId();
-        const newRecipe = new Recipe(recipe);
-        newRecipe.save((err, newRecipe) => {
-          if (err) {
-            console.log(err);
-          }
-          else {
-            addIngredients(newRecipe);
-          }
-        })
-      }
-    }
-  })
-  app.listen(3000);
-};
-
-function addIngredients(newRecipe) {
-  for (const ingredient of newRecipe.ingredients) {
-    const obj = {
-      quantity: "1",
-      name: ingredient.name,
-    }
-    Ingredient.updateOne(obj, { $push: { recipes: newRecipe._id } }, { upsert: true }, (err, result) => {
-      if (err) {
-        console.log(err);
-      }
-    });
-  }
-}
 
 
-loadRecipes();
+
+helper.loadRecipes();
+app.listen(3000);
 // app.listen(process.env.PORT || 22438);
