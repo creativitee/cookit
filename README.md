@@ -81,13 +81,13 @@ An Example Ingredient List:
 
 ## Research Topics
 
-* (4 points) Integrate user authentication
+* (6 points) Integrate user authentication
     * I've never done user authentication with javascript before.
     * If it's anything like django's framework, I have assigned it 4 points with some basis of familiarity
-* (2 points) BootStrap CSS
+* (1-2 points) BootStrap CSS
     * as bootstrap and other css modules are relatively easy to operate from what I've heard, I've assigned it 2 points
-* (4 points) 
-    * Selenium is challenging to automate testing, so I've assgined it 4 points
+* (1-2 points) Form Validation
+    * I'm planning on adding form validation for the registration 
 10 points total out of 8 required points (___TODO__: addtional points will __not__ count for extra credit_)
 
 
