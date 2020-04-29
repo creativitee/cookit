@@ -1,6 +1,7 @@
 require('./db');
 
 const express = require('express');
+const fs = require('fs');
 const path = require('path');
 const bodyParser = require('body-parser');
 const passport = require('passport');
@@ -145,6 +146,7 @@ app.get('/myLists/:name', isLoggedIn, function (req, res) {
 
   const listName = req.params.name;
   const obj = { user: req.user._id, nameQuery: listName };
+
   List.find(obj, (err, result) => {
     if (err) {
       console.log(err);
@@ -154,40 +156,49 @@ app.get('/myLists/:name', isLoggedIn, function (req, res) {
       let ingredients = [];
       if (!err) {
         for (const ingredient of result[0].items) {
-          if (Object.prototype.hasOwnProperty.call(req.query, ingredient.name)){
-              const cur = { name: ingredient.name };
-              ingredients.push(cur);
+          if (Object.prototype.hasOwnProperty.call(req.query, ingredient.name)) {
+            const cur = { name: ingredient.name };
+            ingredients.push(cur);
           }
         }
       }
 
-      if (ingredients.length === 0){
-        const temp = { name: 'NaN'};
+      if (ingredients.length === 0) {
+        const temp = { name: 'NaN' };
         ingredients.push(temp);
       }
-      Ingredient.find({$or: ingredients}, (err, output) => {
+      Ingredient.find({ $or: ingredients }, (err, output) => {
         let allRecipes = [];
         if (err) {
           console.log(err);
         }
         else {
-          for (const r of output){
-            for (const id of r.recipes){
-              const cur = {_id : id};
-              allRecipes.push(cur);
+          for (const r of output) {
+            for (const id of r.recipes) {
+              // const cur = { _id: id };
+              allRecipes.push(id);
             }
-          }
-          if (allRecipes.length === 0){
-            const temp = { name: 'NaN'};
-            allRecipes.push(temp);
           }
 
-          Recipe.find({$or : allRecipes}, (err, recipes) => {
-            if (err){
+          //remove duplicates
+          const filtered = allRecipes.filter((ele1, ele2) => allRecipes.indexOf(ele1) === ele2);
+          const toFind = [];
+
+          for (const id of filtered) {
+            const cur = { _id: id };
+            toFind.push(cur);
+          }
+
+          if (toFind.length === 0) {
+            const temp = { name: 'NaN' };
+            toFind.push(temp);
+          }
+          Recipe.find({ $or: toFind }, (err, recipes) => {
+            if (err) {
               console.log(err);
             }
-            else{
-              res.render('list', { list: result[0], ingredients: ingredients, recipes: recipes});
+            else {
+              res.render('list', { list: result[0], ingredients: ingredients, recipes: recipes });
             }
           })
         }
@@ -213,6 +224,7 @@ app.post('/recipes', isLoggedIn, function (req, res) {
   }
 
   console.log(itemNames, quantities);
+
   for (let i = 0; i < itemNames.length; i++) {
     if (quantities[i] !== "" && itemNames[i] !== "") {
       const obj = {
@@ -240,7 +252,7 @@ app.post('/recipes', isLoggedIn, function (req, res) {
       console.log(err);
     }
     else {
-      addIngredients(newRecipe);
+      helper.addIngredients(newRecipe);
       res.redirect('/home');
     }
 
@@ -307,7 +319,23 @@ function isLoggedIn(req, res, next) {
 
 
 
+function loadRecipes(data) {
+  const d = JSON.parse(data);
+  for (const recipe of d) {
+    recipe.nameQuery = recipe.name.replace(/\s+/g, '');
+    recipe._id = mongoose.Types.ObjectId();
+    const newRecipe = new Recipe(recipe);
+    newRecipe.save((err, newRecipe) => {
+      if (err) {
+        console.log(err);
+      }
+      else {
+        helper.addIngredients(newRecipe);
+      }
+    })
+  }
+}
 
-helper.loadRecipes();
+helper.readFile('sample-recipes.json', loadRecipes, console.log);
 app.listen(3000);
 // app.listen(process.env.PORT || 22438);

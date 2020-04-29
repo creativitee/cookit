@@ -26,32 +26,39 @@ class Helper {
   }
 
   //add sample recipes
-  loadRecipes() {
-    () => {
-    fs.readFile('sample-recipes.json', function (err, data) {
-      if (err) {
-        console.log(err);
-      }
-      else {
-        const d = JSON.parse(data);
-        for (const recipe of d) {
-          recipe.nameQuery = recipe.name.replace(/\s+/g, '');
-          recipe._id = mongoose.Types.ObjectId();
-          const newRecipe = new Recipe(recipe);
-          newRecipe.save((err, newRecipe) => {
-            if (err) {
-              console.log(err);
-            }
-            else {
-              this.addIngredients(newRecipe);
-            }
-          })
-        }
-      }
-    })
-  }
-  };
 
+  
+//    //add sample recipes
+//    storeRecipes(data){
+//     () => {
+//     const d = JSON.parse(data);
+//     for (const recipe of d) {
+//       recipe.nameQuery = recipe.name.replace(/\s+/g, '');
+//       recipe._id = mongoose.Types.ObjectId();
+//       const newRecipe = new Recipe(recipe);
+//       newRecipe.save((err, newRecipe) => {
+//         if (err) {
+//           console.log(err);
+//         }
+//         else {
+//           this.addIngredients(newRecipe);
+//         }
+//       })
+//     }
+//   }
+//   }
+
+  //readFile
+  readFile(fileName, successFn, errorFn){
+    fs.readFile(fileName, function(err, data){
+        if (err){
+            errorFn(err);
+        }
+        else{
+            successFn(data);
+        }
+    });
+  }
 }
 
 module.exports = {
