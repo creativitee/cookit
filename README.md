@@ -100,3 +100,4 @@ An Example Ingredient List:
 2. [Selenium docs](https://www.selenium.dev/documentation/en/)
 3. [Sample Recipes](https://github.com/raywenderlich/recipes/blob/master/Recipes.json)
 4. [Sample passport js code](https://mherman.org/blog/local-authentication-with-passport-and-express-4/)
+5. [Sample passport js code](https://medium.com/@kevinhsu_83500/user-authentication-with-node-js-and-mongodb-c8b1645513f9)
