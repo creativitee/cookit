@@ -6,12 +6,11 @@ const passportLocalMongoose = require('passport-local-mongoose');
 //get username and pw hash
 const User = new mongoose.Schema({
   // username provided by authentication plugin 
+  // password hash provided by authentication plugin (add salt to this)
   _id : mongoose.Schema.Types.ObjectID,
   username: String,
   password: String,
-  // password hash provided by authentication plugin (add salt to this)
-  // lists:  [{ type: mongoose.Schema.Types.ObjectId, ref: 'List' }]
-  // recipes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Recipe' }]
+
 });
 
 // an ingredient in a recipe 
@@ -19,16 +18,11 @@ const User = new mongoose.Schema({
 //   require additional Item documents; just increase the quantity!)
 // * items in a list can be crossed off
 const Ingredient = new mongoose.Schema({
-  // quantity: {type: Number, min: 1, required: true},
   quantity: {type: String, required: true},
   name: {type: String, required: true},
   checked: {type: Boolean, default: true},
   recipes: [{type: mongoose.Schema.Types.ObjectId, ref: 'Recipe'}]
-}, 
-// {
-//   _id: true
-// }
-);
+});
 
 // a inventory list
 // * each list must have a related user
@@ -37,7 +31,6 @@ const List = new mongoose.Schema({
   user: {type: mongoose.Schema.Types.ObjectId, ref:'User'},
   name: {type: String, required: true},
   nameQuery : String,
-  // createdAt: {type: Date, required: true},
   items: [Ingredient]
 });
 
@@ -46,7 +39,6 @@ const Recipe = new mongoose.Schema({
   _id : mongoose.Schema.Types.ObjectID,
   name: {type: String, required: true},
   nameQuery : String,
-  // createdAt: {type: Date, required: true},
   ingredients: [Ingredient],
   steps: [String]
 });
