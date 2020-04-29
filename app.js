@@ -5,13 +5,10 @@ const path = require('path');
 const fs = require('fs');
 const bodyParser = require('body-parser');
 const passport = require('passport');
-const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const LocalStrategy = require('passport-local').Strategy;
 
 const app = express();
-const list = [];
-
 
 
 //mongoose
@@ -72,13 +69,6 @@ app.get("/home", isLoggedIn, function (req, res) {
 })
 
 
-// app.post('/', (req,res) => {
-//   const obj = {ingredient : req.body.name, quantity : req.body.quantity};
-//   list.push(obj);
-//   res.redirect('/');
-// });
-
-
 //createList page
 
 
@@ -91,7 +81,7 @@ app.get('/createList', isLoggedIn
 //list page
 app.post('/home', isLoggedIn, function (req, res) {
   const ingredients = [];
-  // const temp = req.body.list.split(',');
+
   let itemNames = req.body.itemName;
   let quantities = req.body.quantity;
 
@@ -102,8 +92,7 @@ app.post('/home', isLoggedIn, function (req, res) {
   }
 
   for (let i = 0; i < itemNames.length; i++) {
-    // const curr = temp[i].split(' ');
-    // console.log(curr);
+
     if (quantities[i] !== "" && itemNames[i] !== "") {
       const obj = {
         quantity: quantities[i],
@@ -155,6 +144,8 @@ app.get('/myLists', isLoggedIn, function (req, res) {
 
 
 app.get('/myLists/:name', isLoggedIn, function (req, res) {
+  // console.log(req.query);
+
   const listName = req.params.name;
   const obj = { user: req.user._id, nameQuery: listName };
   List.find(obj, (err, result) => {
@@ -162,26 +153,48 @@ app.get('/myLists/:name', isLoggedIn, function (req, res) {
       console.log(err);
     }
     else {
-      const ingredients = [];
+
+      let ingredients = [];
       if (!err) {
         for (const ingredient of result[0].items) {
-          const cur = { name: ingredient.name };
-          ingredients.push(cur);
+          if (Object.prototype.hasOwnProperty.call(req.query, ingredient.name)){
+              const cur = { name: ingredient.name };
+              ingredients.push(cur);
+          }
         }
       }
-      console.log(ingredients);
+
+      if (ingredients.length === 0){
+        const temp = { name: 'NaN'};
+        ingredients.push(temp);
+      }
       Ingredient.find({$or: ingredients}, (err, output) => {
+        let allRecipes = [];
         if (err) {
           console.log(err);
         }
         else {
-          // console.log(result[0].recipes);
-          // return output[0].recipes;
-          res.render('list', { list: result[0], recipes: output[0].recipes });
+          for (const r of output){
+            for (const id of r.recipes){
+              const cur = {_id : id};
+              allRecipes.push(cur);
+            }
+          }
+          if (allRecipes.length === 0){
+            const temp = { name: 'NaN'};
+            allRecipes.push(temp);
+          }
+
+          Recipe.find({$or : allRecipes}, (err, recipes) => {
+            if (err){
+              console.log(err);
+            }
+            else{
+              res.render('list', { list: result[0], ingredients: ingredients, recipes: recipes});
+            }
+          })
         }
       })
-      // const temp = findRecipes(ingredients);
-      // console.log(temp);
     }
   });
 });
@@ -194,7 +207,6 @@ app.get('/addRecipe', isLoggedIn, function (req, res) {
 
 app.post('/recipes', isLoggedIn, function (req, res) {
   const ingredients = [];
-  // const temp = req.body.list.split(',');
   let itemNames = req.body.itemName;
   let quantities = req.body.quantity;
 
@@ -259,11 +271,6 @@ app.get('/login', (req, res) => {
   res.render('login');
 });
 
-// app.post('/login', isLoggedIn, {
-//   failureRedirect: '/login',
-//   successRedirect: '/'
-// });;
-
 app.post("/login", passport.authenticate("local", {
   successRedirect: "/home",
   failureRedirect: "/login"
@@ -275,15 +282,6 @@ app.get('/register', (req, res) => {
   res.render('register');
 })
 
-// app.post('/register', (req, res) => {
-//   User.register(new User({
-//     username : req.body.username
-// }),
-//    req.body.password, function(err, user){
-//       if(err){            
-//            console.log(err);            
-//            return res.render('register');        
-// }
 
 app.post("/register", function (req, res) {
   User.register(new User({ _id: mongoose.Types.ObjectId(), username: req.body.username }), req.body.password, function (err, user) {
@@ -296,12 +294,6 @@ app.post("/register", function (req, res) {
     });
   });
 });
-
-// passport.authenticate("local")(req, res, function(){
-//   res.redirect("/");       
-// });     
-// });
-// })
 
 app.get("/logout", function (req, res) {
   req.logout();
@@ -334,17 +326,6 @@ function loadRecipes() {
           }
           else {
             addIngredients(newRecipe);
-            // for (const ingredient of newRecipe.ingredients){
-            //   const obj = {
-            //     quantity : "1",
-            //     name : ingredient.name,
-            //   }
-            //   Ingredient.updateOne(obj, {$push : {recipes : recipe._id}}, {upsert : true}, (err, result) => {
-            //     if (err){
-            //       console.log(err);
-            //     }
-            //   });
-            // }
           }
         })
       }
@@ -367,18 +348,6 @@ function addIngredients(newRecipe) {
   }
 }
 
-function findRecipes(ingredients) {
-  Ingredient.find({$or: ingredients}, (err, result) => {
-    if (err) {
-      console.log(err);
-    }
-    else {
-      console.log(result[0].recipes);
-      return result[0].recipes;
-    }
-  })
-}
 
-// };
 loadRecipes();
 // app.listen(process.env.PORT || 22438);
