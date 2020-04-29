@@ -2,28 +2,33 @@
 
 <h1>{{list.name}}</h1>
 
-<form method = "GET" action=/myLists/{{list.nameQuery}}>
-<div class="table">
-    <table>
-        <tr>
-            <th>Checked</th>
-            <th>Ingredient</th>
-            <th>Quantity</th>
-        </tr>
-        {{#each list.items as |ingredient|}}
-        <tr>
-            <td><input class="checkBoxes" type="checkbox" name={{ingredient.name}}></td>
-            <td>{{ingredient.name}}</td>
-            <td>{{ingredient.quantity}}</td>
-        </tr>
-        {{/each}}
-    </table>
-</div>
+<form method="GET" action=/myLists/{{list.nameQuery}}>
+    <div class="table">
+        <table>
+            <thead class="thead-dark">
+            <tr>
+                <th>Checked</th>
+                <th>Ingredient</th>
+                <th>Quantity</th>
+            </tr>
+            </thead>
+            {{#each list.items as |ingredient|}}
+            <tr>
+                <td><input class="checkBoxes" type="checkbox" name={{ingredient.name}}></td>
+                <td>{{ingredient.name}}</td>
+                <td>{{ingredient.quantity}}</td>
+            </tr>
+            {{/each}}
+        </table>
+    </div>
 
-<input type="submit" value="Get Recipes!"> 
+    <input type="submit" value="Get Recipes!">
 </form>
 
-<h2>All Possible Recipes</h2>
-{{#each recipes as |recipe|}}
+<div class="Recipes">
+
+    <h2>All Possible Recipes</h2>
+    {{#each recipes as |recipe|}}
     <li><a href=/recipes/{{recipe.nameQuery}}>{{recipe.name}}</a></li>
-{{/each}}
+    {{/each}}
+</div>

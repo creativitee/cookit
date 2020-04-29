@@ -1,10 +1,13 @@
+//defer content
 document.addEventListener('DOMContentLoaded', main);
 
+//main function
 function main(){
     const form = document.querySelector('#addList');
     const addTo = addElement(form, 'button', 'Add Ingredient');
     addTo.addEventListener('click', handleAdd);
 
+    //add ingredient button for dynamic form
     function handleAdd(evt){
         evt.preventDefault();
         const li = addElement(form, 'li', '');
@@ -22,6 +25,7 @@ function addElement(location, type, text) {
     return element;
 }
 
+//function that creates input element
 function addInputElement(location, inputType, name, itemName) {
     const element = document.createElement('input');
     const label = document.createElement('label');

@@ -1,6 +1,11 @@
+//defer content
 document.addEventListener('DOMContentLoaded', main);
 
+
+//main function
 function main(){
+
+    //same as list, add ingredient and steps buttons
     const ingredient = document.querySelector('#addIngredients');
     const addToIngredients = addElement(ingredient, 'button', 'Add Ingredient');
     addToIngredients.addEventListener('click', handleIngredientAdd);
@@ -9,6 +14,8 @@ function main(){
     const addToSteps = addElement(steps, 'button', 'Add Step');
     addToSteps.addEventListener('click', handleStepAdd);
 
+
+    //event handlers for buttons
     function handleIngredientAdd(evt){
         evt.preventDefault();
         const li = addElement(ingredient, 'li', '');
@@ -33,6 +40,8 @@ function addElement(location, type, text) {
     return element;
 }
 
+
+//create input element
 function addInputElement(location, inputType, name, itemName) {
     const element = document.createElement('input');
     const label = document.createElement('label');

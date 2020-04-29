@@ -1,3 +1,5 @@
+
+//necessary imports
 require('./db');
 
 const express = require('express');
@@ -57,13 +59,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 ////////////////////////
 
 
-//home page
-
+//base page
 app.get('/', (req, res) => {
   res.render('startPage');
 })
 
-
+//home page
 app.get("/home", isLoggedIn, function (req, res) {
   res.render('home');
 })
@@ -78,19 +79,25 @@ app.get('/createList', isLoggedIn
 
 //list page
 app.post('/home', isLoggedIn, function (req, res) {
+
+  //create list of ingredients
   const ingredients = [];
 
   let itemNames = req.body.itemName;
   let quantities = req.body.quantity;
 
 
+  //turn the list into an array if it is only a string
   if (typeof itemNames === 'string' && typeof quantities === 'string') {
     itemNames = [itemNames];
     quantites = [quantities];
   }
 
+
+  //get all items 
   for (let i = 0; i < itemNames.length; i++) {
 
+    //add the ingredients to the list
     if (quantities[i] !== "" && itemNames[i] !== "") {
       const obj = {
         quantity: quantities[i],
@@ -102,6 +109,8 @@ app.post('/home', isLoggedIn, function (req, res) {
       ingredients.push(newIngredient);
     }
   }
+
+  //generate list object
   const listObj = {
     user: req.user._id,
     name: req.body.listName,
@@ -109,6 +118,8 @@ app.post('/home', isLoggedIn, function (req, res) {
     items: ingredients
   }
 
+
+  //save the list
   const newList = new List(listObj);
   newList.save((err, newList) => {
     console.log(newList);
@@ -122,6 +133,8 @@ app.post('/home', isLoggedIn, function (req, res) {
   });
 });
 
+
+//my list page
 app.get('/myLists', isLoggedIn, function (req, res) {
   //query object
   const query = { user: req.user._id };
@@ -141,20 +154,25 @@ app.get('/myLists', isLoggedIn, function (req, res) {
 });
 
 
+//get the info of your list
 app.get('/myLists/:name', isLoggedIn, function (req, res) {
-  // console.log(req.query);
 
+  //get the list info
   const listName = req.params.name;
   const obj = { user: req.user._id, nameQuery: listName };
 
+  //query for the list
   List.find(obj, (err, result) => {
     if (err) {
       console.log(err);
     }
     else {
 
+      //get the ingredients of the list
       let ingredients = [];
       if (!err) {
+
+        //get them based on query
         for (const ingredient of result[0].items) {
           if (Object.prototype.hasOwnProperty.call(req.query, ingredient.name)) {
             const cur = { name: ingredient.name };
@@ -163,16 +181,23 @@ app.get('/myLists/:name', isLoggedIn, function (req, res) {
         }
       }
 
+      //if there is no query (ie no checkedboxes, add dummy query)
       if (ingredients.length === 0) {
         const temp = { name: 'NaN' };
         ingredients.push(temp);
       }
+
+      //using the ingredients find the recipes
       Ingredient.find({ $or: ingredients }, (err, output) => {
+
+        //dummy recipe store
         let allRecipes = [];
         if (err) {
           console.log(err);
         }
         else {
+
+          //iterate over the ingredients to get all lists
           for (const r of output) {
             for (const id of r.recipes) {
               // const cur = { _id: id };
@@ -189,10 +214,13 @@ app.get('/myLists/:name', isLoggedIn, function (req, res) {
             toFind.push(cur);
           }
 
+          //if the query returned empty, make dummy obj to query
           if (toFind.length === 0) {
             const temp = { name: 'NaN' };
             toFind.push(temp);
           }
+
+          //finally find the recipes and then render
           Recipe.find({ $or: toFind }, (err, recipes) => {
             if (err) {
               console.log(err);
@@ -208,12 +236,17 @@ app.get('/myLists/:name', isLoggedIn, function (req, res) {
 });
 
 
+//add recipe page
 app.get('/addRecipe', isLoggedIn, function (req, res) {
   res.render('addRecipe');
 })
 
 
+
+//post to recipes, this is global
 app.post('/recipes', isLoggedIn, function (req, res) {
+
+  //make ingredients list
   const ingredients = [];
   let itemNames = req.body.itemName;
   let quantities = req.body.quantity;
@@ -222,9 +255,7 @@ app.post('/recipes', isLoggedIn, function (req, res) {
     itemNames = [itemNames];
     quantites = [quantities];
   }
-
-  console.log(itemNames, quantities);
-
+  
   for (let i = 0; i < itemNames.length; i++) {
     if (quantities[i] !== "" && itemNames[i] !== "") {
       const obj = {
@@ -237,6 +268,8 @@ app.post('/recipes', isLoggedIn, function (req, res) {
       ingredients.push(newIngredient);
     }
   }
+
+  //make the recipe object
   const recipeObj = {
     _id: mongoose.Types.ObjectId(),
     name: req.body.recipeName,
@@ -245,6 +278,8 @@ app.post('/recipes', isLoggedIn, function (req, res) {
     steps: req.body.step
   }
 
+
+  //save the recipe
   const newRecipe = new Recipe(recipeObj);
   newRecipe.save((err, newRecipe) => {
     console.log(newRecipe);
@@ -252,6 +287,7 @@ app.post('/recipes', isLoggedIn, function (req, res) {
       console.log(err);
     }
     else {
+      //add the recipe id to the ingredients
       helper.addIngredients(newRecipe);
       res.redirect('/home');
     }
@@ -259,6 +295,8 @@ app.post('/recipes', isLoggedIn, function (req, res) {
   });
 });
 
+
+//get the recipes
 app.get('/recipes', isLoggedIn, function (req, res) {
   Recipe.find({}, (err, result) => {
     res.render('allRecipes', { recipes: result });
@@ -266,6 +304,8 @@ app.get('/recipes', isLoggedIn, function (req, res) {
 })
 
 
+
+//get the recipe from the given name
 app.get('/recipes/:recipeName', isLoggedIn, function (req, res) {
   const recipeName = req.params.recipeName;
   const obj = { nameQuery: recipeName };
@@ -275,7 +315,7 @@ app.get('/recipes/:recipeName', isLoggedIn, function (req, res) {
 });
 
 
-// Login, Register
+// Login
 app.get('/login', (req, res) => {
   res.render('login');
 });
@@ -287,29 +327,35 @@ app.post("/login", passport.authenticate("local", {
   res.send("User is " + req.user.id);
 });
 
+//Register
 app.get('/register', (req, res) => {
   res.render('register');
 })
 
 
 app.post("/register", function (req, res) {
+  //make a new user
   User.register(new User({ _id: mongoose.Types.ObjectId(), username: req.body.username }), req.body.password, function (err, user) {
     if (err) {
       console.log(err);
       return res.render('register');
     } //user stragety
+    //authenticate the user
     passport.authenticate("local")(req, res, function () {
       res.redirect("/login"); //once the user sign up
     });
   });
 });
 
+
+//Log Out
 app.get("/logout", function (req, res) {
   req.logout();
   res.redirect("/login");
 });
 
 
+//check if the user has authenticated
 function isLoggedIn(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
@@ -319,6 +365,8 @@ function isLoggedIn(req, res, next) {
 
 
 
+
+//load the recipes from the sample recipe json
 function loadRecipes(data) {
   const d = JSON.parse(data);
   for (const recipe of d) {
@@ -336,6 +384,10 @@ function loadRecipes(data) {
   }
 }
 
+
+//user the helper to read a file
 helper.readFile('sample-recipes.json', loadRecipes, console.log);
+
+//Listen
 app.listen(3000);
 // app.listen(process.env.PORT || 22438);

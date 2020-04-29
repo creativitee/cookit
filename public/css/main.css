@@ -1,0 +1,22 @@
+h1{
+    color:aliceblue;
+}
+a {
+    color:  white;
+}
+img{
+    text-align: left;
+}
+body{
+    background: url('/img/background.png');
+    background-size: cover;
+}
+
+table {
+    border-collapse: collapse;
+    background-color: azure;
+  }
+  
+table, th, td {
+    border: 1px solid black;
+}
